@@ -9,7 +9,7 @@ def test_get_assignments_teacher_1(client, h_teacher_1):
     data = response.json['data']
     for assignment in data:
         assert assignment['teacher_id'] == 1
-        assert assignment['state'] == 'SUBMITTED'
+        assert assignment['state'] == 'SUBMITTED' 
 
 
 def test_get_assignments_teacher_2(client, h_teacher_2):
@@ -25,6 +25,22 @@ def test_get_assignments_teacher_2(client, h_teacher_2):
         assert assignment['teacher_id'] == 2
         assert assignment['state'] == 'SUBMITTED'
 
+def test_post_assignment_teacher_1(client, h_teacher_1):
+    '''passing case: assignment with particular id should be graded'''
+    grade = "A"
+    response = client.post(
+        '/teacher/assignments/grade',
+        headers = h_teacher_1,
+        json={
+        'id': 1,
+        'grade':  grade
+        }
+    )
+    assert response.status_code == 200
+    data = response.json['data']
+    assert data['teacher_id'] == 1
+    assert data['grade'] == grade
+    assert data['state'] == 'GRADED'
 
 def test_grade_assignment_cross(client, h_teacher_2):
     """
@@ -43,6 +59,7 @@ def test_grade_assignment_cross(client, h_teacher_2):
     data = response.json
 
     assert data['error'] == 'FyleError'
+
 
 
 def test_grade_assignment_bad_grade(client, h_teacher_1):
@@ -79,7 +96,6 @@ def test_grade_assignment_bad_assignment(client, h_teacher_1):
 
     assert response.status_code == 404
     data = response.json
-
     assert data['error'] == 'FyleError'
 
 
@@ -100,3 +116,21 @@ def test_grade_assignment_draft_assignment(client, h_teacher_1):
     data = response.json
 
     assert data['error'] == 'FyleError'
+
+def test_regrade_assignment_error(client, h_teacher_1):
+    """
+    failure case: assignment already graded 
+    """
+    grade = "A"
+    response = client.post(
+        '/teacher/assignments/grade',
+        headers = h_teacher_1,
+        json={
+        'id': 1,
+        'grade':  grade
+        }
+    )
+    assert response.status_code == 400
+    error_response = response.json
+    assert error_response['error'] == 'FyleError'
+    

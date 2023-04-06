@@ -31,7 +31,6 @@ def h_student_2():
 
     return headers
 
-
 @pytest.fixture
 def h_teacher_1():
     headers = {
